@@ -1,0 +1,31 @@
+---
+# Reconcile Organizations
+
+- name: "[DRY RUN] Display organizations to be created"
+  ansible.builtin.debug:
+    msg: "Would create organization: {{ item.name }}"
+  loop: "{{ platform_state.organizations }}"
+  when: dry_run
+
+- name: Ensure organizations exist
+  ansible.platform.organization:
+    name: "{{ item.name }}"
+    description: "{{ item.description | default(omit) }}"
+    aap_hostname: "{{ gateway_url }}"
+    aap_username: "{{ gateway_username }}"
+    aap_password: "{{ gateway_password }}"
+    aap_validate_certs: false
+    state: present
+  loop: "{{ platform_state.organizations }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: not dry_run
+  register: _orgs_result
+
+- name: Display organization reconciliation results
+  ansible.builtin.debug:
+    msg: "Organization '{{ item.item.name }}': {{ 'CHANGED' if item.changed else 'OK' }}"
+  loop: "{{ _orgs_result.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: not dry_run

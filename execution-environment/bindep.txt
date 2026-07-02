@@ -1,0 +1,5 @@
+# System dependencies for platform lifecycle EE
+# Override to prevent introspection of all collection deps
+
+git [platform:rpm]
+jq [platform:rpm]

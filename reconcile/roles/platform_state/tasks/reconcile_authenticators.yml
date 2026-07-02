@@ -1,0 +1,34 @@
+---
+# Reconcile Authenticators
+
+- name: "[DRY RUN] Display authenticators to be created"
+  ansible.builtin.debug:
+    msg: "Would create authenticator: {{ item.name }} ({{ item.type | default('unknown') }})"
+  loop: "{{ platform_state.authenticators }}"
+  when: dry_run
+
+- name: Ensure authenticators exist
+  ansible.platform.authenticator:
+    name: "{{ item.name }}"
+    type: "{{ item.type }}"
+    configuration: "{{ item.configuration | default(omit) }}"
+    enabled: "{{ item.enabled | default(true) }}"
+    aap_hostname: "{{ gateway_url }}"
+    aap_username: "{{ gateway_username }}"
+    aap_password: "{{ gateway_password }}"
+    aap_validate_certs: false
+    state: present
+  loop: "{{ platform_state.authenticators }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: not dry_run
+  no_log: true  # Protect sensitive config in logs
+  register: _auth_result
+
+- name: Display authenticator reconciliation results
+  ansible.builtin.debug:
+    msg: "Authenticator '{{ item.item.name }}': {{ 'CHANGED' if item.changed else 'OK' }}"
+  loop: "{{ _auth_result.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: not dry_run

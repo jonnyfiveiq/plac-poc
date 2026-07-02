@@ -1,0 +1,32 @@
+---
+# Reconcile Teams
+
+- name: "[DRY RUN] Display teams to be created"
+  ansible.builtin.debug:
+    msg: "Would create team: {{ item.name }} in org: {{ item.organization }}"
+  loop: "{{ platform_state.teams }}"
+  when: dry_run
+
+- name: Ensure teams exist
+  ansible.platform.team:
+    name: "{{ item.name }}"
+    description: "{{ item.description | default(omit) }}"
+    organization: "{{ item.organization }}"
+    aap_hostname: "{{ gateway_url }}"
+    aap_username: "{{ gateway_username }}"
+    aap_password: "{{ gateway_password }}"
+    aap_validate_certs: false
+    state: present
+  loop: "{{ platform_state.teams }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: not dry_run
+  register: _teams_result
+
+- name: Display team reconciliation results
+  ansible.builtin.debug:
+    msg: "Team '{{ item.item.name }}': {{ 'CHANGED' if item.changed else 'OK' }}"
+  loop: "{{ _teams_result.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: not dry_run

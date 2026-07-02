@@ -1,0 +1,37 @@
+---
+# Reconcile Users
+
+- name: "[DRY RUN] Display users to be created"
+  ansible.builtin.debug:
+    msg: "Would create user: {{ item.username }} ({{ item.email | default('no email') }})"
+  loop: "{{ platform_state.users }}"
+  when: dry_run
+
+- name: Ensure users exist
+  ansible.platform.user:
+    username: "{{ item.username }}"
+    email: "{{ item.email | default(omit) }}"
+    first_name: "{{ item.first_name | default(omit) }}"
+    last_name: "{{ item.last_name | default(omit) }}"
+    is_superuser: "{{ item.is_superuser | default(false) }}"
+    is_platform_auditor: "{{ item.is_platform_auditor | default(false) }}"
+    password: "{{ item.password | default(omit) }}"
+    aap_hostname: "{{ gateway_url }}"
+    aap_username: "{{ gateway_username }}"
+    aap_password: "{{ gateway_password }}"
+    aap_validate_certs: false
+    state: present
+  loop: "{{ platform_state.users }}"
+  loop_control:
+    label: "{{ item.username }}"
+  when: not dry_run
+  no_log: true  # Protect password in logs
+  register: _users_result
+
+- name: Display user reconciliation results
+  ansible.builtin.debug:
+    msg: "User '{{ item.item.username }}': {{ 'CHANGED' if item.changed else 'OK' }}"
+  loop: "{{ _users_result.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.username }}"
+  when: not dry_run

@@ -1,0 +1,35 @@
+---
+# Reconcile Execution Environments
+
+- name: "[DRY RUN] Display execution environments to be created"
+  ansible.builtin.debug:
+    msg: "Would create EE: {{ item.name }} from {{ item.image }}"
+  loop: "{{ platform_state.execution_environments }}"
+  when: dry_run
+
+- name: Ensure execution environments exist
+  ansible.controller.execution_environment:
+    name: "{{ item.name }}"
+    description: "{{ item.description | default(omit) }}"
+    image: "{{ item.image }}"
+    organization: "{{ item.organization | default(omit) }}"
+    credential: "{{ item.credential | default(omit) }}"
+    pull: "{{ item.pull | default(omit) }}"
+    controller_host: "{{ controller_host }}"
+    controller_username: "{{ controller_username }}"
+    controller_password: "{{ controller_password }}"
+    validate_certs: "{{ controller_validate_certs }}"
+    state: present
+  loop: "{{ platform_state.execution_environments }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: not dry_run
+  register: _ees_result
+
+- name: Display execution environment reconciliation results
+  ansible.builtin.debug:
+    msg: "EE '{{ item.item.name }}': {{ 'CHANGED' if item.changed else 'OK' }}"
+  loop: "{{ _ees_result.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when: not dry_run

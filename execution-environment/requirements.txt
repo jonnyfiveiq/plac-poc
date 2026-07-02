@@ -1,0 +1,10 @@
+# Python dependencies for platform lifecycle EE
+# Explicitly list only what we need, avoiding full collection introspection
+
+# Core requirements
+pyyaml
+jsonschema
+kubernetes
+
+# Skip systemd-python from ansible.eda (not needed for platform lifecycle)
+# The base EE already has ansible.platform and most deps

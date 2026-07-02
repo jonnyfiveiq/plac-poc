@@ -1,0 +1,42 @@
+---
+- name: Reconcile AAP Platform State
+  hosts: localhost
+  gather_facts: false
+  # Variables injected from entrypoint.sh via -e flags:
+  # - desired_state_file
+  # - aap_gateway_url
+  # - aap_token
+  # - aap_username
+  # - aap_password
+
+  pre_tasks:
+    - name: Load desired state from file
+      ansible.builtin.include_vars:
+        file: "{{ desired_state_file }}"
+        name: desired_state
+
+    - name: Display loaded state summary
+      ansible.builtin.debug:
+        msg:
+          - "API Version: {{ desired_state.apiVersion | default('v1alpha1') }}"
+          - "Organizations: {{ desired_state.organizations | default([]) | length }}"
+          - "Teams: {{ desired_state.teams | default([]) | length }}"
+          - "Users: {{ desired_state.users | default([]) | length }}"
+          - "Authenticators: {{ desired_state.authenticators | default([]) | length }}"
+          - "Projects: {{ desired_state.projects | default([]) | length }}"
+          - "Execution Environments: {{ desired_state.execution_environments | default([]) | length }}"
+
+    - name: Validate authentication method
+      ansible.builtin.assert:
+        that:
+          - aap_token | length > 0 or (aap_username | length > 0 and aap_password | length > 0)
+        fail_msg: "Either aap_token or aap_username/aap_password must be provided"
+        success_msg: "Authentication validated"
+
+  roles:
+    - role: platform_state
+      vars:
+        platform_state: "{{ desired_state }}"
+        gateway_url: "{{ aap_gateway_url }}"
+        gateway_username: "{{ aap_username }}"
+        gateway_password: "{{ aap_password }}"

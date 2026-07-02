@@ -1,0 +1,50 @@
+# Ansible
+*.retry
+.ansible/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+.venv
+
+# Build artifacts
+context/
+*.tar.gz
+
+# Container builds
+execution-environment/context/
+
+# Credentials (never commit)
+.env
+.env.local
+*.token
+*-token.txt
+credentials/
+secrets/
+
+# Kubernetes
+.kube/
+*.kubeconfig
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Test files (working copies)
+my-platform.yml
+test-*.yml
+test-*.sh

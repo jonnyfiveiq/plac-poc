@@ -1,0 +1,94 @@
+---
+# AAP Platform Desired State Example
+# This file demonstrates the declarative model for AAP platform configuration
+
+apiVersion: lifecycle.aap.redhat.com/v1alpha1
+kind: PlatformState
+metadata:
+  name: example-platform
+
+# Topology (declared but NOT reconciled in POC)
+topology:
+  gateway:
+    replicas: 1
+  execution_nodes: 2
+  hop_nodes: 0
+
+# Platform configuration (reconciled)
+organizations:
+  - name: Engineering
+    description: Engineering organization for product development
+
+  - name: Operations
+    description: Operations organization for infrastructure management
+
+teams:
+  - name: Platform Team
+    organization: Engineering
+    description: Team responsible for platform automation
+
+  - name: SRE Team
+    organization: Operations
+    description: Site Reliability Engineering team
+
+users:
+  - username: alice
+    email: alice@example.com
+    first_name: Alice
+    last_name: Anderson
+    is_superuser: false
+    is_platform_auditor: false
+
+  - username: bob
+    email: bob@example.com
+    first_name: Bob
+    last_name: Builder
+    is_superuser: false
+    is_platform_auditor: false
+
+  - username: auditor
+    email: auditor@example.com
+    first_name: System
+    last_name: Auditor
+    is_superuser: false
+    is_platform_auditor: true
+
+projects:
+  - name: Demo Playbooks
+    organization: Engineering
+    description: Sample automation content for demos
+    scm_type: git
+    scm_url: https://github.com/ansible/ansible-examples.git
+    scm_branch: master
+    scm_update_on_launch: true
+
+  - name: Infrastructure Automation
+    organization: Operations
+    description: Production infrastructure automation
+    scm_type: git
+    scm_url: https://github.com/ansible/ansible-examples.git
+    scm_branch: master
+    scm_update_on_launch: false
+
+execution_environments:
+  - name: Minimal EE
+    description: Minimal execution environment for basic automation
+    image: quay.io/ansible/awx-ee:latest
+    organization: Engineering
+    pull: missing
+
+  - name: Platform Lifecycle EE
+    description: Custom EE for platform lifecycle automation
+    image: quay.io/jhardy/poc-plac:latest
+    organization: Engineering
+    pull: always
+
+authenticators:
+  - name: OIDC Example
+    type: oidc
+    enabled: true
+    configuration:
+      OIDC_ENDPOINT: https://sso.example.com/auth/realms/ansible
+      OIDC_CLIENT_ID: aap-gateway
+      OIDC_KEY: changeme
+      OIDC_SECRET: changeme-secret

@@ -1,0 +1,26 @@
+---
+# Default variables for platform_state role
+
+# Gateway connection (for ansible.platform modules)
+gateway_url: ""
+gateway_token: ""
+gateway_username: ""
+gateway_password: ""
+gateway_validate_certs: false  # Set to false for self-signed certs
+
+# Controller connection (for ansible.controller modules)
+# Note: In AAP on OpenShift, Gateway and Controller often share the same URL
+controller_host: ""
+controller_token: ""
+controller_username: ""
+controller_password: ""
+controller_validate_certs: false  # Set to false for self-signed certs
+
+# Platform state structure (passed from playbook)
+platform_state: {}
+
+# Enforcement mode - when true, resources not in desired state are removed
+enforce_state: true
+
+# Dry run mode for local testing without AAP
+dry_run: "{{ lookup('env', 'DRY_RUN') | default('false', true) | bool }}"

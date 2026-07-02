@@ -1,0 +1,42 @@
+---
+# Main tasks for platform_state role
+# Orchestrates reconciliation of AAP platform resources
+
+- name: Set controller connection vars from gateway vars
+  ansible.builtin.set_fact:
+    controller_host: "{{ gateway_url }}"
+    controller_username: "{{ gateway_username }}"
+    controller_password: "{{ gateway_password }}"
+
+- name: Display reconciliation mode
+  ansible.builtin.debug:
+    msg: "{{ 'DRY RUN MODE - No actual changes will be made' if dry_run else 'LIVE MODE - Changes will be applied' }}"
+
+# Order matters: Organizations first, then resources that depend on them
+- name: Reconcile Organizations
+  ansible.builtin.include_tasks: reconcile_organizations.yml
+  when: platform_state.organizations is defined
+
+- name: Reconcile Teams
+  ansible.builtin.include_tasks: reconcile_teams.yml
+  when: platform_state.teams is defined
+
+- name: Reconcile Users
+  ansible.builtin.include_tasks: reconcile_users.yml
+  when: platform_state.users is defined
+
+- name: Reconcile Projects
+  ansible.builtin.include_tasks: reconcile_projects.yml
+  when: platform_state.projects is defined
+
+- name: Reconcile Execution Environments
+  ansible.builtin.include_tasks: reconcile_execution_environments.yml
+  when: platform_state.execution_environments is defined
+
+- name: Reconcile Authenticators
+  ansible.builtin.include_tasks: reconcile_authenticators.yml
+  when: platform_state.authenticators is defined
+
+- name: Reconciliation complete
+  ansible.builtin.debug:
+    msg: "Platform state reconciliation completed successfully"

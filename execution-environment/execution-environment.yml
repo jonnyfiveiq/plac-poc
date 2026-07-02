@@ -1,0 +1,61 @@
+---
+version: 3
+
+images:
+  base_image:
+    # Use minimal creator-ee and install certified collections from Automation Hub
+    name: 'quay.io/ansible/creator-ee:latest'
+
+dependencies:
+  galaxy:
+    collections:
+      # AAP Platform collections
+      - name: ansible.platform
+        # Gateway platform configuration
+      - name: ansible.controller
+        # Controller resources: projects, EEs, credentials, inventories, job templates
+      - name: ansible.eda
+        # Event-Driven Ansible
+      - name: ansible.hub
+        # Private Automation Hub
+      # Kubernetes support for CR-based mode
+      - name: kubernetes.core
+        version: '>=2.4.0'
+  python:
+    - pyyaml
+    - jsonschema
+    - kubernetes
+  system:
+    - git
+    - jq [platform:rpm]
+
+build_arg_defaults:
+  # Enable pre-releases if ansible.platform is only available as pre-release
+  ANSIBLE_GALAXY_CLI_COLLECTION_OPTS: "--pre"
+
+additional_build_files:
+  - src: ansible.cfg
+    dest: configs/
+  - src: ../reconcile
+    dest: reconcile/
+
+additional_build_steps:
+  prepend_base:
+    - COPY _build/configs/ansible.cfg /etc/ansible/ansible.cfg
+  prepend_galaxy:
+    - ENV ANSIBLE_GALAXY_DISABLE_GPG_VERIFY=1
+    - ENV ANSIBLE_CONFIG=/etc/ansible/ansible.cfg
+    - ARG ANSIBLE_GALAXY_SERVER_AUTOMATION_HUB_TOKEN
+    - ENV ANSIBLE_GALAXY_SERVER_AUTOMATION_HUB_TOKEN=$ANSIBLE_GALAXY_SERVER_AUTOMATION_HUB_TOKEN
+  append_base:
+    - RUN mkdir -p /state /runner
+  append_final:
+    - COPY _build/reconcile /runner/reconcile
+    - RUN chmod +x /runner/reconcile/entrypoint.sh
+    - ENV ANSIBLE_CONFIG=/etc/ansible/ansible.cfg
+    - WORKDIR /runner
+    - ENTRYPOINT ["/runner/reconcile/entrypoint.sh"]
+    - CMD ["apply"]
+
+options:
+  package_manager_path: /usr/bin/microdnf
