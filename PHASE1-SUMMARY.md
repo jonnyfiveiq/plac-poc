@@ -89,7 +89,7 @@ vi .env
 
 **Required values:**
 - `ANSIBLE_GALAXY_SERVER_AUTOMATION_HUB_TOKEN` - Get from https://console.redhat.com/ansible/automation-hub/token
-- `REGISTRY_PASSWORD` - Use provided Quay robot token: `Z1XVSHN13CJTK98BB3C729J0F8ENL56NEGWUFVLZ2KKEEWGYK8ENN98P97LO6QV8`
+- `REGISTRY_PASSWORD` - Set from Quay robot account `jhardy+bob` (never commit this token)
 - `AAP_GATEWAY_URL` - Your AAP Gateway URL (for real testing)
 - `AAP_TOKEN` - Your Gateway admin token (or use AAP_USERNAME/AAP_PASSWORD)
 

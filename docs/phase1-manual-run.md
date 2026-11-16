@@ -29,7 +29,7 @@ podman machine start
 
 2. **Quay Robot Account** (provided)
    - Username: `jhardy+bob`
-   - Token: `Z1XVSHN13CJTK98BB3C729J0F8ENL56NEGWUFVLZ2KKEEWGYK8ENN98P97LO6QV8`
+   - Token: Set `REGISTRY_PASSWORD` in `.env` (never commit this token)
    - Repository: https://quay.io/repository/jhardy/poc-plac
 
 3. **AAP Gateway Credentials**
